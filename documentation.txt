@@ -1,0 +1,60 @@
+SELECT * FROM sys.books;
+
+/* insérer un thème */ 
+INSERT INTO sys.theme (theme) VALUES ('string_theme1'),('string_theme2'),('string_theme3'),('string_theme4');
+
+/* insérer un éditeur */ 
+INSERT INTO sys.editor (editor) VALUES ('string_editor1'),('string_editor2'),('string_editor3'),('string_editor4'),('string_editor5');
+
+/* insérer un type d'abonnement */ 
+INSERT INTO sys.subscription_type (subscription_description) VALUES ('string_subscriptiondescription');
+
+/* insérer un membre */ 
+INSERT INTO sys.library_member (last_name, first_name, subscription_date, address, fk_subscription_type) VALUES ('string_lastname','string_fisrtname', 'date_subscriptiondate','String_address', int_subscription_type_number);
+
+/* insérer un livre */ 
+INSERT INTO sys.books (book_title, fk_theme, fk_editor, publication, availability, available_quantity) VALUES ('string_booktitle', integer_theme, integer_editor, 'String_yearofpub',boolean_availableornot,integer_quantity) ;
+                                                                                                                    
+/* insérer un emprunt */ 
+INSERT INTO sys.borrowing (borrowing_date, borrowing_end_date, borrowing_extra_time, fk_book_borrowed, fk_library_member) VALUES ('date_borrowing', 'date_endborrowing',boolean_extratimeornot,integer_book_borrowed, integer_member);
+
+
+/* affecter auteur sur livre */ INSERT INTO sys.book_author (fk_book, fk_author) VALUES (integer_book, integer_author);
+
+/*exemple d'ajout d'un livre + association livre et auteur */ 
+INSERT INTO sys.books (book_title, fk_theme, fk_editor, publication, availability, available_quantity) VALUES ('1985', 1,1,'1954',1,4);
+INSERT INTO sys.book_author (fk_book, fk_author) VALUES (31, 1);
+
+/*Requête affichant le titre des livres, la disponibilité et l'année de publication d'un auteur */
+SELECT 
+	book_title, 
+    IF((availability=1),'yes','no') AS 'availability', /* la colonne availability est typée boolean, on choisit d'afficher 'oui' si le booléen est 1, 'non' si le booléen est 0*/
+    publication, /* colonne donnant l'année de publication de l'oeuvre */
+    CONCAT(T3.first_name,' ',T3.last_name) AS 'auteur' /* pour plus de lisibilité, on concatene la colonne nom et prénom de l'auteur */
+FROM sys.books AS T1
+INNER JOIN 
+	sys.book_author AS T2
+	ON T1.id = T2.fk_book 
+INNER JOIN 
+	sys.author AS T3
+	ON T2.fk_author = T3.id /*les deux jointures permettent de lier le titre du livre avec l'auteur du livre */
+WHERE T3.last_name LIKE '%O%'; /*C'est ici que l'utilisateur entre le nom de l'auteur ou la partie du nom*/
+
+/*La requête va donc rendre une table comportant l'ensemble des oeuvres écrites par un auteur ayant la lettre 'o' dans son nom de famille*/
+
+
+
+
+/*Requête permettant d'afficher les emprunts réalisés*/
+SELECT 
+	book_title AS 'titre',
+    CONCAT(T3.first_name,' ', T3.last_name) AS 'a été emprunté par' /* concatenation entre colonne prénom et nom de la table library member*/
+FROM sys.books AS T1
+INNER JOIN
+	sys.borrowing AS T2
+    ON T1.id = T2.fk_book_borrowed
+INNER JOIN
+	sys.library_member AS T3
+    ON T2.fk_library_member = T3.id /*les deux jointures permettent de lier le titre du livre avec l'emprunteur */
+WHERE T1.availability != 0; /*affiche les livre qui ont été emprunté avec l'emprunteur*/
+/* La requête va donc rendre une table de tous les livres empruntés associés avec le membre qui l'a emprunté */
